@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Khana Khajana - Smart Restaurant POS & KOT</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://js.zohostatic.com/creator/widgets/version/1.0/widgetsdk-min.js"></script>
+</head>
+<body>
+  <div class="pos-container">
+    <!-- TOP HEADER NAVBAR -->
+    <header class="pos-header">
+      <div class="header-left">
+        <span class="brand-icon">🍽️</span>
+        <div>
+          <h1 class="brand-title">Khana Khajana POS</h1>
+          <span class="brand-subtitle">Smart Restaurant Terminal</span>
+        </div>
+      </div>
+
+      <!-- INSTANT TAB SWITCHER (No iframe reload, zero disconnect) -->
+      <nav class="pos-nav-tabs">
+        <button class="nav-tab active" id="tab-pos" onclick="switchView('pos')">
+          🛒 New Order (POS)
+        </button>
+        <button class="nav-tab" id="tab-kot" onclick="switchView('kot')">
+          👨‍🍳 Kitchen Display (KOT) <span class="badge" id="kot-badge">0</span>
+        </button>
+        <button class="nav-tab" id="tab-bills" onclick="switchView('bills')">
+          🧾 Active Bills
+        </button>
+        <button class="nav-tab" id="tab-history" onclick="switchView('history')">
+          📜 Order History
+        </button>
+      </nav>
+
+      <div class="header-right">
+        <div class="clock-box" id="live-clock">--:--:--</div>
+        <div class="status-indicator">
+          <span class="dot"></span> <span id="sync-status">Connecting to Zoho...</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- ==================== VIEW 1: TOUCH POS ==================== -->
+    <main class="pos-layout" id="view-pos">
+      <!-- LEFT SECTION: TABLES & DISHES -->
+      <section class="menu-section">
+        <!-- TABLE SELECTOR BAR -->
+        <div class="tables-bar">
+          <div class="bar-header">
+            <span class="bar-title">📍 Select Dining Table:</span>
+            <div class="legend">
+              <span class="legend-item"><span class="indicator-dot available"></span> Available</span>
+              <span class="legend-item"><span class="indicator-dot occupied"></span> Occupied</span>
+            </div>
+          </div>
+          <div class="tables-scroll" id="tables-container">
+            <div style="padding: 8px 12px; color: var(--text-muted); font-size: 12px;">⏳ Loading tables from Zoho...</div>
+          </div>
+        </div>
+
+        <!-- SEARCH & ORDER TYPE TOGGLE -->
+        <div class="filter-bar">
+          <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="search-input" placeholder="Search dish..." oninput="filterMenu()">
+          </div>
+          <div class="order-type-toggle">
+            <label class="toggle-btn active" id="type-dinein" onclick="setOrderType('Dine-In')">Dine-In</label>
+            <label class="toggle-btn" id="type-takeaway" onclick="setOrderType('Takeaway')">Takeaway</label>
+            <label class="toggle-btn" id="type-delivery" onclick="setOrderType('Delivery')">Delivery</label>
+          </div>
+        </div>
+
+        <!-- CATEGORY PILLS -->
+        <div class="category-pills" id="category-pills">
+          <!-- Rendered dynamically -->
+        </div>
+
+        <!-- FOOD MENU CARDS GRID -->
+        <div class="menu-grid" id="menu-grid">
+          <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-muted); font-size: 14px;">⏳ Loading food menu from Zoho...</div>
+        </div>
+      </section>
+
+      <!-- RIGHT SECTION: LIVE ORDER CART -->
+      <aside class="cart-section">
+        <div class="cart-header">
+          <div>
+            <h2 class="cart-title">New Order Cart</h2>
+            <div class="cart-meta">Table: <strong id="selected-table-label">None</strong> | Type: <span id="selected-type-label">Dine-In</span></div>
+          </div>
+          <button class="clear-btn" onclick="clearCart()">Clear</button>
+        </div>
+
+        <div class="customer-row">
+          <input type="text" id="cust-name" placeholder="Guest Name (Optional)">
+          <input type="tel" id="cust-phone" placeholder="Phone No.">
+        </div>
+
+        <div class="cart-items" id="cart-items-list">
+          <div class="empty-cart">
+            <div class="empty-cart-icon">🛒</div>
+            <p>Your cart is empty</p>
+            <small>Click on any food dish to add to this order</small>
+          </div>
+        </div>
+
+        <div class="cart-summary">
+          <div class="summary-line">
+            <span>Sub Total:</span>
+            <span id="sub-total-val">₹0.00</span>
+          </div>
+          <div class="summary-line">
+            <span>CGST (<span id="cgst-rate">2.5</span>%):</span>
+            <span id="cgst-val">₹0.00</span>
+          </div>
+          <div class="summary-line">
+            <span>SGST (<span id="sgst-rate">2.5</span>%):</span>
+            <span id="sgst-val">₹0.00</span>
+          </div>
+          <div class="summary-line grand-total">
+            <span>Grand Total:</span>
+            <span id="grand-total-val">₹0.00</span>
+          </div>
+        </div>
+
+        <div class="cart-actions">
+          <button class="btn btn-primary" id="btn-submit-order" onclick="submitOrder()">
+            <span class="btn-icon">⚡</span> Punch Order & Send to KOT
+          </button>
+        </div>
+      </aside>
+    </main>
+
+    <!-- ==================== VIEW 2: KITCHEN DISPLAY (KOT) ==================== -->
+    <main class="kot-layout" id="view-kot" style="display: none;">
+      <div class="page-header-row">
+        <h2>Live Kitchen Order Tickets (KOT)</h2>
+        <button class="btn btn-refresh" onclick="refreshKOT()">🔄 Refresh Kitchen</button>
+      </div>
+
+      <div class="kot-board">
+        <!-- COLUMN 1: NEW ORDERS -->
+        <div class="kot-column col-new">
+          <div class="col-header">
+            <h3>🔔 New Orders <span class="count-badge" id="count-new">0</span></h3>
+          </div>
+          <div class="kot-cards-container" id="kot-list-new">
+            <!-- Cards rendered here -->
+          </div>
+        </div>
+
+        <!-- COLUMN 2: COOKING -->
+        <div class="kot-column col-cooking">
+          <div class="col-header">
+            <h3>🔥 Cooking in Kitchen <span class="count-badge" id="count-cooking">0</span></h3>
+          </div>
+          <div class="kot-cards-container" id="kot-list-cooking">
+            <!-- Cards rendered here -->
+          </div>
+        </div>
+
+        <!-- COLUMN 3: SERVED / READY -->
+        <div class="kot-column col-served">
+          <div class="col-header">
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;"><h3>✅ Served / Ready <span class="count-badge" id="count-served">0</span></h3><button onclick="clearAllServedTickets()" style="background: none; border: none; color: var(--text-muted); font-size: 11px; cursor: pointer; text-decoration: underline;">Clear All</button></div>
+          </div>
+          <div class="kot-cards-container" id="kot-list-served">
+            <!-- Cards rendered here -->
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- ==================== VIEW 3: ACTIVE BILLS & SETTLEMENT ==================== -->
+    <main class="bills-layout" id="view-bills" style="display: none;">
+      <div class="page-header-row">
+        <h2>Active Orders & Bill Settlement</h2>
+        <button class="btn btn-refresh" onclick="refreshBills()">🔄 Refresh Orders</button>
+      </div>
+
+      <div class="orders-table-wrapper">
+        <table class="pos-table">
+          <thead>
+            <tr>
+              <th>Order #</th>
+              <th>Time</th>
+              <th>Table</th>
+              <th>Type</th>
+              <th>Customer</th>
+              <th>Items</th>
+              <th>Total Bill</th>
+              <th>Status</th>
+              <th>Payment</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="orders-table-body">
+            <!-- Rendered dynamically -->
+          </tbody>
+        </table>
+      </div>
+    </main>
+
+    <!-- ==================== VIEW 4: ALL ORDER HISTORY ==================== -->
+    <main class="history-layout" id="view-history" style="display: none;">
+      <div class="page-header-row">
+        <h2>📜 All Order History & Sales Log</h2>
+        <button class="btn btn-refresh" onclick="refreshHistory()">🔄 Refresh History</button>
+      </div>
+
+      <!-- SUMMARY KPI METRICS -->
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="kpi-icon" style="color: #2563eb; background: #eff6ff;">📊</div>
+          <div class="kpi-content">
+            <span class="kpi-label">Total Orders</span>
+            <span class="kpi-value" id="hist-total-count">0</span>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon" style="color: #059669; background: #ecfdf5;">💵</div>
+          <div class="kpi-content">
+            <span class="kpi-label">Total Revenue</span>
+            <span class="kpi-value" id="hist-total-sales">₹0.00</span>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon" style="color: #059669; background: #ecfdf5;">✅</div>
+          <div class="kpi-content">
+            <span class="kpi-label">Paid / Settled</span>
+            <span class="kpi-value" id="hist-paid-count">0</span>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon" style="color: #ea580c; background: #fff7ed;">⏳</div>
+          <div class="kpi-content">
+            <span class="kpi-label">Pending / Unpaid</span>
+            <span class="kpi-value" id="hist-pending-count">0</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- FILTER CONTROLS BAR -->
+      <div class="history-controls">
+        <div class="history-search">
+          <span style="font-size: 14px;">🔍</span>
+          <input type="text" id="hist-search-input" placeholder="Search by Order #, Customer, Table, Dish..." oninput="filterHistoryTable()">
+        </div>
+
+        <div class="history-filters">
+          <button class="filter-pill-btn active" id="hist-filter-all" onclick="setHistoryStatusFilter('all')">All Orders</button>
+          <button class="filter-pill-btn" id="hist-filter-paid" onclick="setHistoryStatusFilter('paid')">Paid Only</button>
+          <button class="filter-pill-btn" id="hist-filter-unpaid" onclick="setHistoryStatusFilter('unpaid')">Unpaid Only</button>
+
+          <select class="history-type-select" onchange="setHistoryTypeFilter(this.value)">
+            <option value="all">All Order Types</option>
+            <option value="Dine-In">🍽️ Dine-In</option>
+            <option value="Takeaway">📦 Takeaway</option>
+            <option value="Delivery">🛵 Delivery</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- HISTORY ORDERS TABLE -->
+      <div class="orders-table-wrapper">
+        <table class="pos-table">
+          <thead>
+            <tr>
+              <th>Order #</th>
+              <th>Date & Time</th>
+              <th>Type / Table</th>
+              <th>Customer</th>
+              <th>Items Summary</th>
+              <th>Total Bill</th>
+              <th>Kitchen Status</th>
+              <th>Payment</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="history-table-body">
+            <!-- Rendered dynamically -->
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <!-- THERMAL RECEIPT MODAL -->
+  <div class="modal-overlay" id="receipt-modal" style="display: none;" onclick="if(event.target === this) closeReceipt()">
+    <div class="receipt-box">
+      <div class="receipt-actions">
+        <button class="btn btn-print" onclick="printReceipt()">🖨️ Print Receipt</button>
+        <button class="btn btn-close" onclick="closeReceipt()">Close</button>
+      </div>
+      <div class="receipt-content" id="receipt-content">
+        <!-- Rendered receipt -->
+      </div>
+    </div>
+  </div>
+
+  <!-- SEPARATE, HIGHLY READABLE CODE MODULES -->
+  <script src="shared.js"></script>
+  <script src="pos.js"></script>
+  <script src="kot.js"></script>
+  <script src="bills.js"></script>
+  <script src="history.js"></script>
+</body>
+</html>

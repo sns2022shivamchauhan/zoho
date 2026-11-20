@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Khana Khajana - Active Bills & Settlement</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://js.zohostatic.com/creator/widgets/version/1.0/widgetsdk-min.js"></script>
+</head>
+<body>
+  <div class="pos-container">
+    <!-- TOP HEADER NAVBAR -->
+    <header class="pos-header">
+      <div class="header-left">
+        <span class="brand-icon">🧾</span>
+        <div>
+          <h1 class="brand-title">Billing & Settlement</h1>
+          <span class="brand-subtitle">Cashier Terminal</span>
+        </div>
+      </div>
+
+      <!-- SEPARATE PAGE TABS -->
+      <nav class="pos-nav-tabs">
+        <a href="index.html" class="nav-tab">🛒 New Order (POS)</a>
+        <a href="kot.html" class="nav-tab">👨‍🍳 Kitchen Display (KOT)</a>
+        <a href="bills.html" class="nav-tab active">🧾 Active Bills</a>
+      </nav>
+
+      <div class="header-right">
+        <div class="clock-box" id="live-clock">--:--:--</div>
+        <div class="status-indicator">
+          <span class="dot"></span> <span id="sync-status">Ready</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- BILLS TABLE VIEW -->
+    <main class="bills-layout">
+      <div class="page-header-row">
+        <h2>Active Orders & Bill Settlement</h2>
+        <button class="btn btn-refresh" onclick="refreshBills()">🔄 Refresh Orders</button>
+      </div>
+
+      <div class="orders-table-wrapper">
+        <table class="pos-table">
+          <thead>
+            <tr>
+              <th>Order #</th>
+              <th>Time</th>
+              <th>Table</th>
+              <th>Type</th>
+              <th>Customer</th>
+              <th>Items</th>
+              <th>Total Bill</th>
+              <th>Status</th>
+              <th>Payment</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="orders-table-body">
+            <!-- Dynamic order rows rendered here -->
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <!-- THERMAL RECEIPT MODAL -->
+  <div class="modal-overlay" id="receipt-modal" style="display: none;" onclick="if(event.target === this) closeReceipt()">
+    <div class="receipt-box">
+      <div class="receipt-actions">
+        <button class="btn btn-print" onclick="printReceipt()">🖨️ Print Receipt</button>
+        <button class="btn btn-close" onclick="closeReceipt()">Close</button>
+      </div>
+      <div class="receipt-content" id="receipt-content">
+        <!-- Rendered receipt -->
+      </div>
+    </div>
+  </div>
+
+  <script src="shared.js"></script>
+  <script src="bills.js"></script>
+</body>
+</html>

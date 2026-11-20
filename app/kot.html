@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Khana Khajana - Kitchen Display (KOT)</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://js.zohostatic.com/creator/widgets/version/1.0/widgetsdk-min.js"></script>
+</head>
+<body>
+  <div class="pos-container">
+    <!-- TOP HEADER NAVBAR -->
+    <header class="pos-header">
+      <div class="header-left">
+        <span class="brand-icon">👨‍🍳</span>
+        <div>
+          <h1 class="brand-title">Kitchen Display System</h1>
+          <span class="brand-subtitle">Live KOT Terminal</span>
+        </div>
+      </div>
+
+      <!-- SEPARATE PAGE TABS -->
+      <nav class="pos-nav-tabs">
+        <a href="index.html" class="nav-tab">🛒 New Order (POS)</a>
+        <a href="kot.html" class="nav-tab active">👨‍🍳 Kitchen Display (KOT) <span class="badge" id="kot-badge">0</span></a>
+        <a href="bills.html" class="nav-tab">🧾 Active Bills</a>
+      </nav>
+
+      <div class="header-right">
+        <div class="clock-box" id="live-clock">--:--:--</div>
+        <div class="status-indicator">
+          <span class="dot"></span> <span id="sync-status">Ready</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- KOT KANBAN BOARD -->
+    <main class="kot-layout">
+      <div class="page-header-row">
+        <h2>Live Kitchen Order Tickets (KOT)</h2>
+        <button class="btn btn-refresh" onclick="refreshKOT()">🔄 Refresh Kitchen</button>
+      </div>
+
+      <div class="kot-board">
+        <!-- COLUMN 1: NEW ORDERS -->
+        <div class="kot-column col-new">
+          <div class="col-header">
+            <h3>🔔 New Orders <span class="count-badge" id="count-new">0</span></h3>
+          </div>
+          <div class="kot-cards-container" id="kot-list-new">
+            <!-- New orders rendered here -->
+          </div>
+        </div>
+
+        <!-- COLUMN 2: COOKING -->
+        <div class="kot-column col-cooking">
+          <div class="col-header">
+            <h3>🔥 Cooking in Kitchen <span class="count-badge" id="count-cooking">0</span></h3>
+          </div>
+          <div class="kot-cards-container" id="kot-list-cooking">
+            <!-- Cooking orders rendered here -->
+          </div>
+        </div>
+
+        <!-- COLUMN 3: SERVED / READY -->
+        <div class="kot-column col-served">
+          <div class="col-header">
+            <h3>✅ Served / Ready <span class="count-badge" id="count-served">0</span></h3>
+          </div>
+          <div class="kot-cards-container" id="kot-list-served">
+            <!-- Served orders rendered here -->
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="shared.js"></script>
+  <script src="kot.js"></script>
+</body>
+</html>

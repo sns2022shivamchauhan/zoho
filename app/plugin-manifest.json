@@ -1,0 +1,15 @@
+{
+  "service": "CREATOR",
+  "locales": [
+    "en"
+  ],
+  "modules": {
+    "widgets": [
+      {
+        "name": "Restaurant POS",
+        "location": "creator.page",
+        "url": "/app/index.html"
+      }
+    ]
+  }
+}
